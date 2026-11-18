@@ -56,7 +56,7 @@ Colab: `notebooks/train_colab.ipynb`.
 
 ```bash
 # trained model on the Part B test set
-python src/evaluate.py --weights checkpoints/best.keras --part B --split test
+python src/evaluate.py --weights checkpoints/csrnet_partB_best.weights.h5 --part B --split test
 # mean-count baseline (no model needed)
 python src/evaluate.py --baseline
 # smoke test with an untrained 1x1-conv model
@@ -76,8 +76,8 @@ Use `--raw-root` / `--processed-root` for Colab/Drive paths and `--tag` to name 
 ## Predict
 
 ```bash
-python src/predict.py --weights checkpoints/best.keras --image path/to/image.jpg --out outputs/prediction.jpg
-python src/predict.py --weights checkpoints/best.keras --image demo_images/ --out outputs/demo/
+python src/predict.py --weights checkpoints/csrnet_partB_best.weights.h5 --image path/to/image.jpg --out outputs/prediction.jpg
+python src/predict.py --weights checkpoints/csrnet_partB_best.weights.h5 --image demo_images/ --out outputs/demo/
 ```
 
 Prints the count and saves the image with a density heatmap overlay and the count
