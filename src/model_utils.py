@@ -43,6 +43,6 @@ def load_model(weights: Optional[str] = None, dummy: bool = False) -> keras.Mode
         except Exception:  # not a full model; fall back to weights-only loading
             pass
     from src.model import build_csrnet
-    model = build_csrnet()
+    model = build_csrnet(pretrained=False)  # weights come from the checkpoint
     model.load_weights(weights)
     return model
