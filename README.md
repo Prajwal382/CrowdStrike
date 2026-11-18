@@ -54,19 +54,34 @@ Colab: `notebooks/train_colab.ipynb`.
 
 ## Evaluate
 
-_TODO (Prajwal)._
-
 ```bash
-python src/evaluate.py --weights checkpoints/best.keras --part B --split test
+# trained model on the Part B test set
+python src/evaluate.py --weights checkpoints/csrnet_partB_best.weights.h5 --part B --split test
+# mean-count baseline (no model needed)
+python src/evaluate.py --baseline
+# smoke test with an untrained 1x1-conv model
+python src/evaluate.py --dummy --tag untrained
 ```
+
+`--weights` takes a full saved model (`.keras`/`.h5`) or a weights-only file
+(`.weights.h5`, loaded into `build_csrnet()`). It writes:
+
+- `outputs/eval_part_B_test.csv`: per-image `image_id, gt, pred, abs_error`
+- `outputs/metrics_part_B_test.json`: MAE, MSE, RMSE
+- `outputs/figures/scatter_part_B_test.png`: predicted vs ground-truth counts
+- `outputs/figures/best_worst_part_B_test.png`: the 5 best and 5 worst images
+
+Use `--raw-root` / `--processed-root` for Colab/Drive paths and `--tag` to name the output files.
 
 ## Predict
 
-_TODO (Prajwal)._
-
 ```bash
-python src/predict.py --weights checkpoints/best.keras --image path/to/image.jpg --out outputs/prediction.jpg
+python src/predict.py --weights checkpoints/csrnet_partB_best.weights.h5 --image path/to/image.jpg --out outputs/prediction.jpg
+python src/predict.py --weights checkpoints/csrnet_partB_best.weights.h5 --image demo_images/ --out outputs/demo/
 ```
+
+Prints the count and saves the image with a density heatmap overlay and the count
+written on it. Given a folder, it processes every image and also writes `counts.csv`.
 
 ## Results (ShanghaiTech Part B, test set, 316 images)
 
@@ -75,7 +90,7 @@ papers report RMSE under the name "MSE".
 
 | Method | MAE | MSE | RMSE |
 |---|---|---|---|
-| Mean-count baseline | _TBD_ | _TBD_ | _TBD_ |
+| Mean-count baseline (predicts 120.84, the mean train count) | 71.44 | 9058.92 | 95.18 |
 | CSRNet (ours) | _TBD_ | _TBD_ | _TBD_ |
 | CSRNet (paper) | 10.6 | n/a | 16.0 |
 
