@@ -1,0 +1,22 @@
+# Dataset and generated density maps (see README for download steps).
+# Leading slash so src/data/ is NOT ignored.
+/data/
+/archive.zip
+
+# Trained weights
+checkpoints/
+*.h5
+*.keras
+
+# Run outputs, except the final figures that go in the report
+/outputs/*
+!/outputs/figures/
+
+# Python / tooling
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+.venv/
+venv/
+.DS_Store
