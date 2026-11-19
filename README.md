@@ -44,13 +44,29 @@ and rebuild the maps in the notebook; `data/processed` is 2.1 GB.
 
 ## Train
 
-_TODO (Ronish)._
+CSRNet (`src/model.py`): VGG16 front end (first 10 conv layers, ImageNet weights)
+plus a dilated back end. Training (`src/train.py`) uses the per-map sum of squared
+pixel errors, Adam (lr 1e-5), batch size 8, random 1/4-area crops with horizontal
+flips, and keeps the checkpoint with the best validation count MAE (early stopping,
+patience 20).
 
 ```bash
-python src/train.py --part B
+python src/train.py --part B                     # full training
+python src/train.py --smoke --no-pretrained      # 2-epoch pipeline check on random tensors
+python src/train.py --part B --resume checkpoints/csrnet_partB_best.weights.h5   # continue after a disconnect
+python src/train.py --help                       # all options
 ```
 
-Colab: `notebooks/train_colab.ipynb`.
+Outputs in `checkpoints/`: `csrnet_partB_best.weights.h5` and `train_log_partB.csv`.
+The training curve goes to `outputs/figures/training_curve_partB.png`.
+
+Colab (recommended, T4 GPU): `notebooks/train_colab.ipynb`. Pass
+`--out-dir /content/drive/MyDrive/...` so checkpoints survive a disconnect.
+
+Our Part B run: 100 epochs (~40 s each on a T4, about 66 minutes total). Best
+validation MAE **11.13** (RMSE 15.63) at epoch 83.
+
+![Training curve](outputs/figures/training_curve_partB.png)
 
 ## Evaluate
 
