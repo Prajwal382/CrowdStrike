@@ -81,14 +81,14 @@ def plot_pipeline(part, raw_root, processed_root, seed, out_path):
     boxed = img.copy()
     cv2.rectangle(boxed, (x, y), (x + cw, y + ch), (255, 255, 0), 6)
     panels = [
-        (boxed, f"1. {image_id} ({w}×{h}), crop box"),
+        (boxed, f"1. {image_id} ({h}×{w}), crop box"),
         (dens, f"density map, sum = {dens.sum():.1f}"),
-        (crop_img, f"2. random crop {cw}×{ch} (1/4 area)"),
+        (crop_img, f"2. random crop {ch}×{cw} (1/4 area)"),
         (crop_d, f"crop density, sum = {crop_d.sum():.1f}"),
         (flip_img, "3. horizontal flip"),
         (flip_d, f"flipped density, sum = {flip_d.sum():.1f}"),
         (None, ""),
-        (target, f"4. 8×8 sum-pool → {target.shape[1]}×{target.shape[0]}, sum = {target.sum():.1f}"),
+        (target, f"4. 8×8 sum-pool → {target.shape[0]}×{target.shape[1]}, sum = {target.sum():.1f}"),
     ]
     fig, axes = plt.subplots(4, 2, figsize=(9, 11))
     for ax, (data, title) in zip(axes.ravel(), panels):

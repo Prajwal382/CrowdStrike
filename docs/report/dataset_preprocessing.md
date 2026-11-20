@@ -4,9 +4,9 @@
 We use the ShanghaiTech Crowd Counting Dataset (Zhang et al., CVPR 2016).
 Each image comes with a `.mat` file listing one (x, y) point per annotated head.
 
-| Part | Train | Test | Typical scene | Resolution |
+| Part | Train | Test | Typical scene | Resolution (H × W) |
 |------|------:|-----:|---------------|------------|
-| B (used) | 400 | 316 | street scenes, sparser crowds | 1024 × 768 |
+| B (used) | 400 | 316 | street scenes, sparser crowds | 768 × 1024 |
 | A (not used, see below) | 300 | 182 | dense crowds from the web | varies |
 
 We hold out 10% of the official training images as a validation split
@@ -51,8 +51,8 @@ resolution (2.1 GB for Part B, rebuilt from the dataset in about 6 seconds).
 ![Six Part B images with their ground-truth density maps](../../outputs/figures/density_examples.png)
 
 ## Input pipeline (`tf.data`)
-- **Training:** random crop of 1/4 of the image area (half width × half
-  height, i.e. 512 × 384 on Part B), random horizontal flip (p = 0.5),
+- **Training:** random crop of 1/4 of the image area (half height × half
+  width, i.e. 384 × 512 on Part B), random horizontal flip (p = 0.5),
   applied identically to the image and its density map.
 - **Validation/test:** full image, zero-padded on the bottom and right to a
   multiple of 8. Padding adds no density, so counts are unchanged.
@@ -86,7 +86,7 @@ Figures are reproduced with `python scripts/plot_density_examples.py` and
 ## Slide bullets
 
 **Slide 3: Dataset**
-- ShanghaiTech Part B: 716 street-scene images, 1024×768, one point per head
+- ShanghaiTech Part B: 716 street-scene images, 768×1024, one point per head
 - Split: 360 train / 40 val (fixed seed 42) / 316 test
 - 9 to 576 people per image, about 120 on average
 - Figure: `outputs/figures/count_hist_part_B.png`
@@ -98,7 +98,7 @@ Figures are reproduced with `python scripts/plot_density_examples.py` and
 - Figure: `outputs/figures/density_examples.png`
 
 **Slide 5: Input pipeline**
-- Train: random 1/4-area crop (512×384) + horizontal flip
+- Train: random 1/4-area crop (384×512) + horizontal flip
 - ImageNet normalisation for the VGG-16 front end
 - 8×8 sum-pooling → 1/8-resolution target, count stays exact
 - Figure: `outputs/figures/pipeline_steps_part_B.png`
