@@ -29,6 +29,17 @@ if ROOT not in sys.path:
 from src.data.loader import DOWNSAMPLE, normalize_image  # noqa: E402
 
 IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
+DEFAULT_MAX_SIDE = 1024  # Part B images are 1024 x 768
+
+
+def limit_size(img: np.ndarray, max_side=DEFAULT_MAX_SIDE) -> np.ndarray:
+    """Shrink img so its longest side is at most max_side (None = keep as is)."""
+    h, w = img.shape[:2]
+    if not max_side or max(h, w) <= max_side:
+        return img
+    scale = max_side / float(max(h, w))
+    return cv2.resize(img, (max(1, round(w * scale)), max(1, round(h * scale))),
+                      interpolation=cv2.INTER_AREA)
 
 
 def load_rgb(image_path: str) -> np.ndarray:
@@ -45,18 +56,21 @@ def pad_to_multiple(img: np.ndarray, multiple: int = DOWNSAMPLE) -> np.ndarray:
     return np.pad(img, ((0, (-h) % multiple), (0, (-w) % multiple), (0, 0)))
 
 
-def predict_count(model, image_path: str) -> Tuple[float, np.ndarray]:
+def predict_count(model, image_path: str, max_side=None) -> Tuple[float, np.ndarray]:
     """Predict the head count for one image.
 
     Args:
         model: keras.Model mapping images to (H/8, W/8, 1) density maps.
         image_path: path to any image readable by OpenCV.
+        max_side: if set, shrink the image so its longest side is at most this
+            many pixels before inference (large photos run out of memory and
+            show people at a very different scale from the training images).
 
     Returns:
         (count, density): count is a float, density is the (H/8, W/8) map
-        for the padded image.
+        for the (resized and) padded image.
     """
-    rgb = pad_to_multiple(load_rgb(image_path))
+    rgb = pad_to_multiple(limit_size(load_rgb(image_path), max_side))
     x = normalize_image(rgb)[np.newaxis]
     density = model(x, training=False).numpy()[0, ..., 0]
     return float(density.sum()), density
@@ -82,9 +96,9 @@ def make_overlay(image_bgr: np.ndarray, density: np.ndarray, count: float) -> np
     return out
 
 
-def predict_and_save(model, image_path: str, out_path: str) -> float:
-    count, density = predict_count(model, image_path)
-    overlay = make_overlay(cv2.imread(image_path), density, count)
+def predict_and_save(model, image_path: str, out_path: str, max_side=None) -> float:
+    count, density = predict_count(model, image_path, max_side)
+    overlay = make_overlay(limit_size(cv2.imread(image_path), max_side), density, count)
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
     if not cv2.imwrite(out_path, overlay):
         raise OSError(f"Could not write {out_path}")
@@ -101,6 +115,9 @@ def main():
     ap.add_argument("--image", required=True, help="an image file, or a folder of images")
     ap.add_argument("--out", default=os.path.join("outputs", "predictions"),
                     help="output image path, or a folder (default: %(default)s)")
+    ap.add_argument("--max-side", type=int, default=DEFAULT_MAX_SIDE,
+                    help="shrink images so the longest side is at most this many pixels "
+                         "(default: %(default)s, the Part B width; 0 = keep full size)")
     args = ap.parse_args()
 
     from src.model_utils import load_model
@@ -120,7 +137,7 @@ def main():
     for path in images:
         stem = os.path.splitext(os.path.basename(path))[0]
         out_path = os.path.join(out_dir, f"{stem}_pred.jpg") if out_dir else args.out
-        count = predict_and_save(model, path, out_path)
+        count = predict_and_save(model, path, out_path, args.max_side)
         rows.append((os.path.basename(path), count))
         print(f"{os.path.basename(path)}: {count:.1f} people -> {out_path}")
 
