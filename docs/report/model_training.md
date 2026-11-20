@@ -69,8 +69,9 @@ early stopping and the CSV log all use this count MAE.
 - Learning-rate decay (or a lower rate later in training) would likely
   smooth the validation curve and give a better final model.
 - A larger validation split would make model selection less noisy.
-- We train on Part B only; Part A has much denser crowds and would need the
-  geometry-adaptive density maps and longer training.
+- We train on Part B only. Part A has much denser crowds; its
+  geometry-adaptive density maps are already implemented, but it would need
+  longer training.
 
 ## Credits
 Architecture from Li, Zhang and Chen, "CSRNet: Dilated Convolutional Neural

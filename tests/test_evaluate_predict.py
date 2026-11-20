@@ -12,7 +12,7 @@ sys.path.insert(0, ROOT)
 
 from src.evaluate import count_metrics  # noqa: E402
 from src.model_utils import build_dummy_model  # noqa: E402
-from src.predict import make_overlay, pad_to_multiple, predict_count  # noqa: E402
+from src.predict import limit_size, make_overlay, pad_to_multiple, predict_count  # noqa: E402
 
 
 def test_count_metrics():
@@ -39,3 +39,11 @@ def test_predict_count_and_overlay(tmp_path):
     assert count == pytest.approx(float(density.sum()))
     overlay = make_overlay(img, density, count)
     assert overlay.shape == img.shape and overlay.dtype == np.uint8
+
+
+def test_limit_size():
+    img = np.zeros((3000, 4000, 3), dtype=np.uint8)
+    assert limit_size(img, 1024).shape == (768, 1024, 3)
+    assert limit_size(img, None).shape == img.shape
+    small = np.zeros((500, 600, 3), dtype=np.uint8)
+    assert limit_size(small, 1024).shape == small.shape

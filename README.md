@@ -98,6 +98,9 @@ python src/predict.py --weights checkpoints/csrnet_partB_best.weights.h5 --image
 
 Prints the count and saves the image with a density heatmap overlay and the count
 written on it. Given a folder, it processes every image and also writes `counts.csv`.
+Images are shrunk so the longest side is at most 1024 pixels (the Part B width)
+before inference; change this with `--max-side` (`0` keeps full size, which can
+run out of memory on large photos).
 
 ## Results (ShanghaiTech Part B, test set, 316 images)
 
@@ -107,8 +110,12 @@ papers report RMSE under the name "MSE".
 | Method | MAE | MSE | RMSE |
 |---|---|---|---|
 | Mean-count baseline (predicts 120.84, the mean train count) | 71.44 | 9058.92 | 95.18 |
-| CSRNet (ours) | _TBD_ | _TBD_ | _TBD_ |
-| CSRNet (paper) | 10.6 | n/a | 16.0 |
+| CSRNet (ours, best-val checkpoint) | 11.78 | 303.83 | 17.43 |
+| CSRNet (paper, Li et al. 2018) | 10.6 | n/a | 16.0 |
+
+Validation (40 images) for the same checkpoint: MAE 11.13, RMSE 15.63.
+Full write-up: [docs/report/report.md](docs/report/report.md)
+(rebuild it from the section files with `python scripts/build_report.py`).
 
 ## Credits
 
@@ -118,3 +125,7 @@ papers report RMSE under the name "MSE".
   Multi-Column Convolutional Neural Network.* CVPR 2016 (ShanghaiTech dataset).
 - ShanghaiTech Kaggle mirror by Thai Thien.
 - Public CSRNet implementations used for reference only: _list each one we looked at, with a link_.
+- Demo photos (Unsplash License): Ryoji Iwata, Daniele Colucci, Cheung Yin,
+  Fan WU, Dim 7, Viktor Solomonik, Tsuyoshi Kozu and Georg Eiermann on
+  [Unsplash](https://unsplash.com). The photos are not stored in this repo;
+  only our prediction overlays are.

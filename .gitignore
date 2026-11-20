@@ -2,6 +2,7 @@
 # Leading slash so src/data/ is NOT ignored.
 /data/
 /archive.zip
+/demo_images/
 
 # Trained weights
 checkpoints/
