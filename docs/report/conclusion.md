@@ -1,8 +1,8 @@
 # Conclusion
 
 We built a complete crowd-counting pipeline: border-safe Gaussian density maps
-whose sums match the head counts, a `tf.data` loader that keeps counts exact
-through augmentation and 1/8 sum-pooling, a Keras CSRNet trained on a single
+whose sums match the head counts, a `tf.data` loader whose flips and 8×8
+sum-pooling keep each crop's count exact, a Keras CSRNet trained on a single
 Colab T4 GPU in about 66 minutes, and scripts that evaluate any checkpoint and
 draw density heatmaps on new images.
 

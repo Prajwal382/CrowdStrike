@@ -15,19 +15,22 @@ About 10 slides, roughly 1 minute each. Each owner presents their own part.
 - Figure: one test image next to its density map
 
 ## 3. Dataset (Prashant)
-- ShanghaiTech Part B: 400 train (360 + 40 val) / 316 test, 768×1024 street scenes
-- One annotated point per head
-- Fixed 10% validation split, seed 42
+- ShanghaiTech Part B: 716 street-scene images, 768×1024, one point per head
+- Split: 360 train / 40 val (fixed seed 42) / 316 test
+- 9 to 576 people per image, about 120 on average
+- Figure: `outputs/figures/count_hist_part_B.png`
 
 ## 4. Ground-truth density maps (Prashant)
-- Head points → Gaussian kernels (σ = 15), sum = count
-- Border-safe kernels: count error < 0.1% on every image
+- Each head → Gaussian kernel (σ = 15 px) that sums to 1
+- Border-safe: kernels clipped and renormalised at the image edge
+- Map sum = head count; worst error 7.4 × 10⁻⁷ over all 716 images
 - Figure: `outputs/figures/density_examples.png`
 
 ## 5. Input pipeline (Prashant)
-- 1/4-area random crops + horizontal flips
+- Train: random 1/4-area crop (384×512) + horizontal flip
 - ImageNet normalisation for the VGG-16 front end
-- 8×8 sum-pooling to 1/8 resolution keeps the count exact
+- 8×8 sum-pooling → 1/8-resolution target, count stays exact
+- Figure: `outputs/figures/pipeline_steps_part_B.png`
 
 ## 6. Model: CSRNet (Ronish)
 - Front end: first 10 conv layers of VGG-16 (ImageNet weights)

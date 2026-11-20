@@ -36,15 +36,29 @@ On the 316 Part B test images our model reaches **MAE 11.78** and
 We use the ShanghaiTech Crowd Counting Dataset (Zhang et al., CVPR 2016).
 Each image comes with a `.mat` file listing one (x, y) point per annotated head.
 
-| Part | Train | Test | Typical scene | Resolution |
+| Part | Train | Test | Typical scene | Resolution (H × W) |
 |------|------:|-----:|---------------|------------|
-| B (required) | 400 | 316 | street scenes, sparser crowds | 768 × 1024 |
-| A (stretch)  | 300 | 182 | dense crowds from the web | varies |
+| B (used) | 400 | 316 | street scenes, sparser crowds | 768 × 1024 |
+| A (not used, see below) | 300 | 182 | dense crowds from the web | varies |
 
 We hold out 10% of the official training images as a validation split
 (Part B: 360 train / 40 val) with a fixed random seed (42), so every teammate
 and every Colab run uses the same split. The ids are saved in
 `data/processed/part_B/splits.json`. The test set is used only for final evaluation.
+
+Head counts per image in our Part B splits:
+
+| Split | Images | Total heads | Min | Median | Mean | Max |
+|-------|-------:|------------:|----:|-------:|-----:|----:|
+| train | 360 | 43,502 | 12 | 96 | 120.8 | 576 |
+| val   |  40 |  5,649 | 15 | 117 | 141.2 | 521 |
+| test  | 316 | 39,121 |  9 | 93 | 123.8 | 539 |
+
+![Head-count distribution per split](../../outputs/figures/count_hist_part_B.png)
+
+Train and test have very similar distributions. The 40-image validation split
+happens to be somewhat denser (mean 141 vs 121), and with so few images its
+MAE is noisy. That is one reason validation and test numbers differ.
 
 ### Ground-truth density maps
 Counting is framed as density regression. Each head point is replaced by a
@@ -53,16 +67,20 @@ equals the head count.
 
 - **Part B:** fixed kernel, σ = 15 px. Part B crowds are fairly uniform in
   scale, so a fixed σ works well (as in CSRNet).
-- **Part A:** geometry-adaptive kernel. σᵢ = β · d̄ᵢ, where d̄ᵢ is the mean
-  distance to the k = 3 nearest heads (via `scipy.spatial.KDTree`) and β = 0.3.
-  Denser regions get narrower kernels.
+- **Part A (implemented, not trained):** geometry-adaptive kernel.
+  σᵢ = β · d̄ᵢ, where d̄ᵢ is the mean distance to the k = 3 nearest heads
+  (via `scipy.spatial.KDTree`) and β = 0.3, so denser regions get narrower
+  kernels. Part A training was cut for time.
 
 Kernels are truncated at 3σ. Heads near the border would normally lose part
 of their mass outside the image, which lowers the count. We clip each kernel
 to the image and renormalise it, so every head still contributes exactly 1.
-The generation script checks that every map satisfies
-|sum − count| / count < 10⁻³ and refuses to save a map that fails.
-Maps are stored as float32 `.npy` files at full image resolution.
+The generation script refuses to save any map with
+|sum − count| / count ≥ 10⁻³. On all 716 Part B images the largest relative
+error is 7.4 × 10⁻⁷. Maps are stored as float32 `.npy` files at full image
+resolution (2.1 GB for Part B, rebuilt from the dataset in about 6 seconds).
+
+![Six Part B images with their ground-truth density maps](../../outputs/figures/density_examples.png)
 
 ### Input pipeline (`tf.data`)
 - **Training:** random crop of 1/4 of the image area (half height × half
@@ -78,13 +96,24 @@ Maps are stored as float32 `.npy` files at full image resolution.
   resizing. Sum-pooling preserves the total count exactly, while bilinear
   resizing would scale it by 1/64.
 
+The figure below follows one training sample through these steps. The crop
+contains 4.8 of the image's 50 heads, because heads cut by the crop border
+count fractionally. The flip and the sum-pooling both keep that 4.8 exactly.
+
+![One training sample through the input pipeline](../../outputs/figures/pipeline_steps_part_B.png)
+
 ### Verification
 - Unit tests check the count invariant, including heads on or outside
   the image border, and that the split is deterministic and disjoint. They
   also check loader shapes and dtypes, and that the 1/8 targets keep the count.
 - A test on 20 random real Part B images checks that each density sum
   matches the number of annotated heads.
-- `outputs/figures/density_examples.png` shows 6 image/density pairs.
+- The training-set mean count from our maps (120.8) matches the mean-count
+  baseline in the results section (120.84), which was cross-checked against
+  the raw annotations.
+
+Figures are reproduced with `python scripts/plot_density_examples.py` and
+`python scripts/plot_data_stats.py`.
 
 ## Model and Training
 
@@ -157,8 +186,9 @@ early stopping and the CSV log all use this count MAE.
 - Learning-rate decay (or a lower rate later in training) would likely
   smooth the validation curve and give a better final model.
 - A larger validation split would make model selection less noisy.
-- We train on Part B only; Part A has much denser crowds and would need the
-  geometry-adaptive density maps and longer training.
+- We train on Part B only. Part A has much denser crowds; its
+  geometry-adaptive density maps are already implemented, but it would need
+  longer training.
 
 ## Results
 
@@ -274,8 +304,8 @@ These add to the training limitations in the Model and Training section.
 ## Conclusion
 
 We built a complete crowd-counting pipeline: border-safe Gaussian density maps
-whose sums match the head counts, a `tf.data` loader that keeps counts exact
-through augmentation and 1/8 sum-pooling, a Keras CSRNet trained on a single
+whose sums match the head counts, a `tf.data` loader whose flips and 8×8
+sum-pooling keep each crop's count exact, a Keras CSRNet trained on a single
 Colab T4 GPU in about 66 minutes, and scripts that evaluate any checkpoint and
 draw density heatmaps on new images.
 
