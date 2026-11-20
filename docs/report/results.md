@@ -41,23 +41,63 @@ for any training or model-selection decision.
   heavily, so most of the error comes from a minority of images with large
   count errors rather than small errors spread evenly.
 
+- **Bias:** the model undercounts on 228 of the 316 test images (72%). On
+  average it predicts 117.75 people where there are 123.80, about 5% too few.
+
+All test numbers were reproduced independently from the shared checkpoint
+(`checkpoints/csrnet_partB_best.weights.h5`) with `src/evaluate.py`'s data
+pipeline and plotting code, and match Ronish's run to two decimals.
+
 ## Predicted vs ground-truth counts
 
-_Figure pending: `outputs/figures/scatter_part_B_test.png`, produced by_
-`python src/evaluate.py --weights checkpoints/csrnet_partB_best.weights.h5 --part B --split test`.
+![Predicted vs ground-truth counts](../../outputs/figures/scatter_part_B_test.png)
+
+The points follow the diagonal closely (correlation 0.985 between predicted
+and true counts). Below about 150 people the errors are small; above about 250
+the spread widens and most large misses fall below the diagonal. The worst 10%
+of images (32 of 316) account for 35% of the total absolute error.
 
 ## Best and worst test images
 
-_Figure pending: `outputs/figures/best_worst_part_B_test.png` (same command)._
+![Five best and five worst test images](../../outputs/figures/best_worst_part_B_test.png)
+
+The five best images are counted almost exactly (errors of 0.1 people or less)
+and range from 24 to 230 people, so the model is not only accurate on sparse
+scenes. All five worst images are dense (261 to 429 people). Four of them are
+undercounts by 58 to 92 people. In these scenes the people far from the camera
+are very small and packed together, so their heads blur into each other at the
+model's 1/8 output resolution. The one overcount (IMG_293: 397.6 vs 327) is a
+dense plaza with many partly hidden people.
 
 ## Qualitative results on new images
 
-To check how the model behaves outside ShanghaiTech, we ran `src/predict.py` on
-crowd photos from Unsplash (free licence; credits in the README). These images
-have no ground truth, so they show behaviour, not accuracy.
+To see how the model behaves outside ShanghaiTech, we ran `src/predict.py` on
+eight crowd photos from Unsplash (free licence; credits in the README). The
+photos were shrunk so their longest side is 1024 pixels, the width of a Part B
+image (`--max-side 1024`, the default). They have no ground truth, so this
+shows behaviour, not accuracy.
 
-_Figures pending: overlays in `outputs/figures/demo/`, produced by_
-`python src/predict.py --weights checkpoints/csrnet_partB_best.weights.h5 --image demo_images/ --out outputs/figures/demo/`.
+![Predictions on eight Unsplash photos](../../outputs/figures/demo_grid.jpg)
+
+Individual overlays and counts: `outputs/figures/demo/`.
+
+- **Similar viewpoint to Part B works best.** On raised street views where
+  heads are roughly the size seen in training (Shanghai crossing, Notting Hill
+  market, Bangkok street), the heatmap sits on the visible heads and the counts
+  look plausible.
+- **Overhead views with large heads are undercounted.** The festival crowd shot
+  from directly above gives 36.4, although clearly more people are visible. Each
+  head is several times larger than in Part B, and the model spreads less than
+  one person's worth of density over it.
+- **Distant bands of texture can be overcounted.** In the Ginza (232.6) and
+  sparse London (40.2) photos, the heatmap forms a horizontal band along the far
+  end of the street, including vehicles and building fronts, which inflates the
+  count.
+
+These failures match the dataset: Part B contains only raised, oblique street
+views with a narrow range of head sizes. Training with scale augmentation, or
+on Part A's more varied images, would be the first steps to handle other
+viewpoints.
 
 ## Limitations of the evaluation
 These add to the training limitations in the Model and Training section.

@@ -98,6 +98,9 @@ python src/predict.py --weights checkpoints/csrnet_partB_best.weights.h5 --image
 
 Prints the count and saves the image with a density heatmap overlay and the count
 written on it. Given a folder, it processes every image and also writes `counts.csv`.
+Images are shrunk so the longest side is at most 1024 pixels (the Part B width)
+before inference; change this with `--max-side` (`0` keeps full size, which can
+run out of memory on large photos).
 
 ## Results (ShanghaiTech Part B, test set, 316 images)
 
