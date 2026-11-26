@@ -27,6 +27,9 @@ Run the steps in this order from the repo root. Every script has `--help`.
 Steps 4 and 5 can be run without training by downloading our weights
 (see [Trained weights](#trained-weights)).
 
+**Fastest check (no dataset needed):** do [Setup](#setup), download the weights, then run
+step 5 on any crowd photo.
+
 ## Project structure
 
 | Path | What it is |
@@ -48,13 +51,14 @@ Steps 4 and 5 can be run without training by downloading our weights
 
 ## Setup
 
-Python 3.10, 3.11 or 3.12 (the pinned TensorFlow 2.15/2.16 does not install on 3.13).
+Python 3.10, 3.11 or 3.12 (the pinned TensorFlow 2.15/2.16 does not install on 3.13, so create
+the environment with one of those versions explicitly, as below).
 A GPU is only needed for training.
 
 ```bash
 git clone https://github.com/Prajwal382/CrowdStrike.git
 cd CrowdStrike
-python -m venv .venv
+python3.12 -m venv .venv         # Windows: py -3.12 -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 python -m pytest tests -q
@@ -64,12 +68,15 @@ python -m pytest tests -q
 
 The dataset is not in this repo.
 
-1. On Kaggle, search "ShanghaiTech" (dataset by Thai Thien) and choose
+1. Sign in to Kaggle (a free account is required), open the
+   [ShanghaiTech dataset](https://www.kaggle.com/tthien/shanghaitech) by Thai Thien and choose
    **Download dataset as zip** (about 349 MB). Save it as `archive.zip` in the repo root.
 2. Unzip only the dataset folder into `data/`:
    ```bash
    unzip -q archive.zip "ShanghaiTech/*" -d data
    ```
+   On Windows without `unzip`: right-click the zip, choose **Extract All**, and move the
+   `ShanghaiTech` folder into `data/`.
    The scripts expect this layout (`part_B_final` is also accepted):
    ```
    data/ShanghaiTech/part_B/
