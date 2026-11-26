@@ -43,7 +43,7 @@ Steps 4 and 5 can be run without training by downloading our weights
 | `notebooks/train_colab.ipynb` | End-to-end training on a Colab T4 GPU |
 | `tests/` | Unit tests for the data pipeline, evaluation and prediction |
 | `docs/CONTRACT.md` | Interface agreement between the data, model and evaluation modules |
-| `docs/report/` | Report sections, assembled report (`report.md`) and slide outline |
+| `docs/report/` | Report sections and the assembled report (`report.md`) |
 | `outputs/figures/` | Figures used in the report, including demo predictions |
 
 ## Setup
