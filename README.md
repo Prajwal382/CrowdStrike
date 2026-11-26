@@ -97,8 +97,8 @@ and rebuild the maps in the notebook; `data/processed` is 2.1 GB.
 
 ## Trained weights
 
-The weights file (`csrnet_partB_best.weights.h5`, about 65 MB) is not in the repo.
-Download it from **[WEIGHTS_LINK]** and save it as
+The weights file (`csrnet_partB_best.weights.h5`, about 186 MB) is too large for the repo.
+Download it from [Google Drive](https://drive.google.com/file/d/1WR1j8Z28lbykctx4AyQBTBiJAoFNIglX/view) and save it as
 `checkpoints/csrnet_partB_best.weights.h5`, or train your own with step 3
 (about 66 minutes on a Colab T4).
 
